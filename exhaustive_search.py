@@ -1,20 +1,5 @@
 import itertools
-from classes import Connection, create_list_of_connections, approve_length
-
-# Параметры
-# k = 4 # количесвто перестановок в начальной популяции
-# g = 5 # количество поколений
-# c = 21 # целевой центр тяжести
-# h1 = 2 # минимальная длина
-# h2 = 47.45 # максимальная длина
-
-# s1 = (1, 8, 5, 1)
-# s2 = (5, 9, 5, 2)
-# s3 = (4, 7, 5, 3)
-# s4 = (2, 8, 5, 4)
-
-# list_of_segments = [s1, s2, s3, s4]
-# list_of_segments = [s1, s2]
+from classes import create_list_of_connections
 
 def exhaustive_search(list_of_segments, c, h1, h2):
     
