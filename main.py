@@ -7,14 +7,24 @@
 # Затем наиболее эффективная перестановка и ее отклонение копируются из текущей популяции. Это будет использоваться позже для сравнения с перестановками потомков.
 
 import random
+import timeit
 from classes import Connection, create_list_of_connections, approve_length
+from exhaustive_search import exhaustive_search
+from heuristic import heuristic
+
+# Параметры
+# k = 4 # количесвто перестановок в начальной популяции
+# g = 5 # количество поколений
+# c = 15 # целевой центр тяжести
+# h1 = 2 # минимальная длина
+# h2 = 100 # максимальная длина
 
 # Параметры
 k = 4 # количесвто перестановок в начальной популяции
 g = 5 # количество поколений
-c = 15 # целевой центр тяжести
+c = 37 # целевой центр тяжести
 h1 = 2 # минимальная длина
-h2 = 100 # максимальная длина
+h2 = 77 # максимальная длина
 
 # Вспомогательная функция для выполнения кроссовера
 def perform_crossover(perm1, perm2):
@@ -58,31 +68,45 @@ def perform_crossover(perm1, perm2):
 # segments = [(1,2,3), (4,5,6), (7,8,9), (10,11,12), (13,14,15)]
 # population = [random.sample(segments, len(segments)) for _ in range(k)]
 # s0 = (a, b, p, name)
-s1 = (1, 8, 5, 1)
-s2 = (5, 9, 5, 2)
-s3 = (4, 7, 5, 3)
+s1 = (2, 8, 6, 1)
+s2 = (1, 9, 3, 2)
+s3 = (4, 6, 4, 3)
 s4 = (2, 8, 5, 4)
-# s5 = (1, 6, 5, 5)
-# s6 = (5, 3, 5, 6)
-# s7 = (5, 8, 15, 7)
+s5 = (5, 5, 5, 5)
+s6 = (7, 3, 5, 6)
+s7 = (8, 2, 1, 7)
 
 
-# list_of_segments = [s1, s2, s3, s4, s5, s6, s7]
-list_of_segments = [s1, s2, s3, s4]
+list_of_segments = [s1, s2, s3, s4, s5, s6, s7]
 print(f'Изначальный список всех сегментов: {list_of_segments}')
 
+# метод полного перебора
+start_time_exhaustive = timeit.default_timer()
+exhaustive_search(list_of_segments, c, h1, h2)
+end_time_exhaustive = timeit.default_timer()
+print(f'Время поиска лучшей расстановки полным перебором: {end_time_exhaustive - start_time_exhaustive} \n')
+
+# эвристический метод
+start_time_heuristic = timeit.default_timer()
+heuristic(list_of_segments, c, h1, h2)
+end_time_heuristic = timeit.default_timer()
+print(f'Время поиска расстановки эвристическим методом: {end_time_heuristic - start_time_heuristic} \n')
+
+
+# генетический метод
+start_time_genetic = timeit.default_timer()
 population = create_list_of_connections(list_of_segments, k, c, h1, h2)
 
 for gen in range(1, g+1):
     # Рассчет пригодности для каждой перестановки
     fitness = []
     for perm in population:
-        print(perm.list_of_segments)
+        # print(perm.list_of_segments)
         fitness.append((perm, perm.deviation))
     fitness.sort(key=lambda x: x[1])
     best_perm, best_dev = fitness[0]
-    print(best_perm)
-    print(best_dev)
+    # print(f'best_perm: {best_perm}')
+    # print(f'best_dev: {best_dev}')
 
     # Проверка на оптимальное решение
     if best_dev == 0:
@@ -96,7 +120,7 @@ for gen in range(1, g+1):
         child = perform_crossover(perm1, perm2)
         child = approve_length(child, list_of_segments, h1, h2)
         child.calculate_connection()
-        child.calculate_deviation(c)
+        child.calculate_deviation(c, h1, h2)
         # Обмен двумя случайными сегментами в потомке
         i, j = random.sample(range(len(list_of_segments)), 2)
         child.list_of_segments[i], child.list_of_segments[j] = child.list_of_segments[j], child.list_of_segments[i]
@@ -115,17 +139,21 @@ for gen in range(1, g+1):
     
     population = new_population
 
-# Вывод наилучшей перестановки и ее значение пригодности
+# Вывод наилучшей перестановки, ее значение пригодности, начального отступа
 find = False
 for res in fitness:
     if (res[0].a + res[0].b > h1) and (res[0].a + res[0].b < h2):
         print("Лучшая расстановка:", res[0].list_of_segments)
-        print("Лучшее значение отклонения от центра тяжести:", res[1])
+        print("Лучшее значение отклонения от целевого центра тяжести:", res[1])
+        if res[0].indent != None:
+            print("Отступ от левого края для соединения:", res[0].indent)
         find = True
         break
 
 if find == False:
     print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
 
+end_time_genetic = timeit.default_timer()
+print(f'Время поиска лучшей расстановки генетическим методом: {end_time_genetic - start_time_genetic}')
 # print("Best permutation:", best_perm)
 # print("Fitness value:", best_dev)

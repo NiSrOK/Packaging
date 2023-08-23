@@ -1,15 +1,5 @@
 from random import shuffle, sample
 
-# class Segment:
-#     def __init__(self, a, b, p, name):
-#         self.a = int(a)
-#         self.b = int(b)
-#         self.p = int(p)
-#         self.name = name
-    
-#     def get_info(self):
-#         print(f'a = {self.a}, b = {self.b}, p = {self.p}, name = {self.name}')
-
 class Connection:
     def __init__(self, list_of_segments: list):
         self.a = None
@@ -17,6 +7,7 @@ class Connection:
         self.p = None
         self.list_of_segments = list_of_segments
         self.deviation = None
+        self.indent = None
     
     def __str__(self):
         return f"list_of_segments: {self.list_of_segments}"
@@ -33,13 +24,20 @@ class Connection:
             self.p += self.list_of_segments[i][2]
         return self
     
-    def calculate_deviation(self, c):
-        self.deviation = abs(self.a - c)
-        # return self
+
+    def calculate_deviation(self, c, h1, h2):
+        if self.a < c:
+            if c > h2 - self.b:
+                self.indent = h2 - self.b - self.a
+                self.deviation = c - h2 + self.b
+            else:
+                self.indent = c - self.a
+                self.deviation = 0
+        else:
+            self.deviation = abs(self.a - c)
 
     def randomize_connection(self):
         self.list_of_segments = sample(self.list_of_segments, len(self.list_of_segments))
-        # return self
 
 def increase_length(con, list_of_segments, len, h1, h2):
     for seg in list_of_segments:
@@ -62,16 +60,15 @@ def approve_length(con, list_of_segments, h1, h2):
         else:
             return con
 
-def create_list_of_connections(list_of_segments, k, c, h1, h2):
+def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
     list_of_connections = []
     for _ in range(k):
         con = Connection(list_of_segments=list_of_segments)
         con = approve_length(con, list_of_segments, h1, h2)
-        con.randomize_connection()
+        if random:
+            con.randomize_connection()
         con.calculate_connection()
-        con.calculate_deviation(c)
-        # print(f'a = {con.a}')
-        # print(f'b = {con.b}')
+        con.calculate_deviation(c, h1, h2)
         list_of_connections.append(con)
     return list_of_connections
 
