@@ -1,4 +1,4 @@
-from classes import Connection, create_list_of_connections, approve_length
+from classes import Connection, create_list_of_connections
 import random
 
 # Вспомогательная функция для выполнения кроссовера
@@ -62,7 +62,7 @@ def genetic(list_of_segments, k, g, c, h1, h2):
         while num_children > 0:
             perm1, perm2 = random.sample(population, 2)
             child = perform_crossover(perm1, perm2)
-            child = approve_length(child, list_of_segments, h1, h2)
+            # child = approve_length(child, list_of_segments, h1, h2)
             child.calculate_connection()
             child.calculate_deviation(c, h1, h2)
             # Обмен двумя случайными сегментами в потомке
@@ -86,13 +86,14 @@ def genetic(list_of_segments, k, g, c, h1, h2):
     # Вывод наилучшей перестановки, ее значение пригодности, начального отступа
     find = False
     for res in fitness:
-        if (res[0].a + res[0].b > h1) and (res[0].a + res[0].b < h2):
+        if (res[0].a + res[0].b >= h1) and (res[0].a + res[0].b <= h2):
             print("Лучшая расстановка:", res[0].list_of_segments)
             print("Лучшее значение отклонения от целевого центра тяжести:", res[1])
             if res[0].indent != None:
                 print("Отступ от левого края для соединения:", res[0].indent)
             find = True
-            break
+            return res[1]
+
 
     if find == False:
         print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')

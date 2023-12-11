@@ -45,26 +45,58 @@ def increase_length(con, list_of_segments, len, h1, h2):
             con.list_of_segments.append(seg)
     return con
 
-def approve_length(con, list_of_segments, h1, h2):
+# def approve_length(con, list_of_segments, h1, h2):
+#     len = 0
+#     flag = True
+#     while(flag):
+#         for seg in con.list_of_segments:
+#             len += seg[0] + seg[1]
+#         if len > h2:
+#             con.list_of_segments.pop()
+#             len = 0
+#         elif len < h1:
+#             increase_length(con, list_of_segments, len, h1, h2)
+#             return con
+#         else:
+#             return con
+
+def approve_length(list_of_segments, h1, h2):
     len = 0
-    flag = True
-    while(flag):
-        for seg in con.list_of_segments:
-            len += seg[0] + seg[1]
-        if len > h2:
-            con.list_of_segments.pop()
-            len = 0
-        elif len < h1:
-            increase_length(con, list_of_segments, len, h1, h2)
-            return con
-        else:
-            return con
+    for segment in list_of_segments:
+        if segment[0] + segment[1] == 0:
+            return 'ZeroLength', list_of_segments
+        len += segment[0] + segment[1]
+    if len < h1:
+        return 'LengthIsTooShort', list_of_segments
+    elif len < h2:
+        return 'LengthIsAcceptable', list_of_segments
+    
+    # Сортируем список отрезков в порядке убывания длины (a + b)
+    sorted_segments = sorted(list_of_segments, key=lambda x: x[0] + x[1], reverse=True)
+
+    # Инициализируем переменные для отслеживания общей длины и списка отрезков
+    current_length = 0
+    selected_segments = []
+
+    # Проходим по отсортированным отрезкам
+    for segment in sorted_segments:
+        # Если добавление текущего отрезка не превысит h2 и общая длина будет больше h1
+        if current_length + segment[0] + segment[1] <= h2 and current_length + segment[0] + segment[1] > h1:
+            # Добавляем отрезок к общей длине
+            current_length += segment[0] + segment[1]
+            # Добавляем отрезок к списку выбранных отрезков
+            selected_segments.append(segment)
+
+    return 'SegmentListChanged', selected_segments
+
+    
+    
 
 def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
     list_of_connections = []
     for _ in range(k):
         con = Connection(list_of_segments=list_of_segments)
-        con = approve_length(con, list_of_segments, h1, h2)
+        # con = approve_length(con, list_of_segments, h1, h2)
         if random:
             con.randomize_connection()
         con.calculate_connection()

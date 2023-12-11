@@ -24,6 +24,7 @@ def exhaustive_search(list_of_segments, c, h1, h2):
     print(f'Минимальное отклонение: {best_dev}')
     if best_perm.indent != None:
         print("Отступ от левого края для соединения:", best_perm.indent)
+    return best_dev
 
 
 
