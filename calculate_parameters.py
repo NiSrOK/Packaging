@@ -27,24 +27,31 @@ def tuner( c, h1):
     ws[f'A1'] = 'k'
     ws[f'B1'] = 'g'
     ws[f'C1'] = 'Среднее отклонение от наилучшего ц.т.'
+    ws[f'D1'] = 'Среднее время генетического алгоритма'
+    ws[f'E1'] = 'Среднее время полного перебора'
     row = 2
     glob_res = []
     for k in range(1, 30):
         for g in range(1, 30):
             res = []
+            count = 0
+            total_time_genetic = 0
+            total_time_exhaustive = 0
             for i in range(3, 10):
                 list_of_segments = generate_base_population(i)
                 h2 = calculate_length(list_of_segments)
                 print(f'k = {k}, g = {g}')
-                # start_time_genetic = timeit.default_timer()
+                start_time_genetic = timeit.default_timer()
                 gen_dev = genetic(list_of_segments, k, g, c, h1, h2)
-                # end_time_genetic = timeit.default_timer()
-                # print(f'Время поиска лучшей расстановки генетическим методом: {end_time_genetic - start_time_genetic}')
-                # start_time_exhaustive = timeit.default_timer()
+                end_time_genetic = timeit.default_timer()
+                total_time_genetic += (end_time_genetic - start_time_genetic)
+                
+                start_time_exhaustive = timeit.default_timer()
                 ex_dev = exhaustive_search(list_of_segments, c, h1, h2)
-                # end_time_exhaustive = timeit.default_timer()
-                # print(f'Время поиска лучшей расстановки полным перебором: {end_time_exhaustive - start_time_exhaustive} \n')
-                # print(f'Отклонение результата генетического от полного перебора {abs(gen_dev-ex_dev)}')
+                end_time_exhaustive = timeit.default_timer()
+                total_time_exhaustive += (end_time_exhaustive - start_time_exhaustive)
+
+                count += 1
                 res.append(abs(gen_dev-ex_dev))
             dev = float('{:.3f}'.format(sum(res) / len(res)))
             if dev == 0:
@@ -53,8 +60,10 @@ def tuner( c, h1):
             ws[f'A{row}'] = k
             ws[f'B{row}'] = g
             ws[f'C{row}'] = dev
+            ws[f'D{row}'] = total_time_genetic / count
+            ws[f'E{row}'] = total_time_exhaustive / count
             row += 1
-    wb.save("tuner.xlsx")
+    wb.save("tuner3.xlsx")
     return glob_res
 
 def plot_3d_graph(data):
@@ -62,7 +71,7 @@ def plot_3d_graph(data):
     x_data, y_data, z_data = zip(*data)
 
     # Создание трехмерного графика
-    fig = go.Figure(data=[go.Scatter3d(x=x_data, y=y_data, z=z_data, mode='markers', marker=dict(color='red', size=8))])
+    fig = go.Figure(data=[go.Scatter3d(x=x_data, y=y_data, z=z_data, mode='markers', marker=dict(color='red', size=3))])
 
     # Настройка меток осей и установка логарифмической шкалы для оси Z
     fig.update_layout(scene=dict(xaxis_title='k', yaxis_title='g', zaxis_title='Среднее арифмитическое отклонения', zaxis=dict(type='log')))
@@ -92,7 +101,7 @@ def read_data(file_path):
 
 c = 37 # целевой центр тяжести
 h1 = 0
-#res = tuner(c, h1)
+# res = tuner(c, h1)
 res = read_data('tuner.xlsx')
 # data_points = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
 plot_3d_graph(res)

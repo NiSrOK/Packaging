@@ -57,8 +57,11 @@ for _ in range(1):
     elif status == 'LengthIsTooLong':
         print(f'Суммарная длина сегментов больше {h2}. Алгоритму не удалось исключить лишние сегменты.\n')
         break
-    elif status == 'ZeroLength':
-        print(f'Длина одного из сегментов равна 0.\n')
+    elif status == 'WrongLength':
+        print(f'Некорректная длина одного из сегментов.\n')
+        break
+    elif status == 'LengthIsTooShortAfterAlg':
+        print(f'После работы алгоритма суммарная длина сегментов меньше {h1}.\n')
         break
     elif status == 'LengthIsAcceptable':
         print(f'Суммарная длина сегментов в заданном списке корректна.\n')

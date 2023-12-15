@@ -63,8 +63,8 @@ def increase_length(con, list_of_segments, len, h1, h2):
 def approve_length(list_of_segments, h1, h2):
     len = 0
     for segment in list_of_segments:
-        if segment[0] + segment[1] == 0:
-            return 'ZeroLength', list_of_segments
+        if segment[0] < 0 or segment[1] < 0 or (segment[0] + segment[1] <= 0):
+            return 'WrongLength', list_of_segments
         len += segment[0] + segment[1]
     if len < h1:
         return 'LengthIsTooShort', list_of_segments
@@ -80,13 +80,16 @@ def approve_length(list_of_segments, h1, h2):
 
     # Проходим по отсортированным отрезкам
     for segment in sorted_segments:
-        # Если добавление текущего отрезка не превысит h2 и общая длина будет больше h1
-        if current_length + segment[0] + segment[1] <= h2 and current_length + segment[0] + segment[1] > h1:
+        # Если добавление текущего отрезка не превысит h2
+        if current_length + segment[0] + segment[1] <= h2:
             # Добавляем отрезок к общей длине
             current_length += segment[0] + segment[1]
             # Добавляем отрезок к списку выбранных отрезков
             selected_segments.append(segment)
 
+    if current_length < h1:
+        return 'LengthIsTooShortAfterAlg', list_of_segments
+    
     return 'SegmentListChanged', selected_segments
 
     
