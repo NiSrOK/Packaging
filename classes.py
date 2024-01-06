@@ -1,5 +1,27 @@
 from random import shuffle, sample
 
+class Package:
+    def __init__(self, list_of_levels: list):
+        self.list_of_levels = list_of_levels
+        self.deviation = None
+    
+    def randomize_package(self):
+        self.list_of_levels = sample(self.list_of_levels, len(self.list_of_levels))
+    
+    def calculate_deviation(self, list_of_levels, c):
+        sum_p = 0
+        sum_pai = 0
+        for level in list_of_levels:
+            a = level[0].a
+            indent = level[0].indent
+            p = level[0].p
+
+            sum_p += p
+            sum_pai += p*(a + indent)
+        
+        print(abs(sum_pai/sum_p - c))
+        self.deviation = abs(sum_pai/sum_p - c)
+
 class Connection:
     def __init__(self, list_of_segments: list):
         self.a = None
@@ -45,21 +67,6 @@ def increase_length(con, list_of_segments, len, h1, h2):
             con.list_of_segments.append(seg)
     return con
 
-# def approve_length(con, list_of_segments, h1, h2):
-#     len = 0
-#     flag = True
-#     while(flag):
-#         for seg in con.list_of_segments:
-#             len += seg[0] + seg[1]
-#         if len > h2:
-#             con.list_of_segments.pop()
-#             len = 0
-#         elif len < h1:
-#             increase_length(con, list_of_segments, len, h1, h2)
-#             return con
-#         else:
-#             return con
-
 def approve_length(list_of_segments, h1, h2):
     len = 0
     for segment in list_of_segments:
@@ -92,8 +99,6 @@ def approve_length(list_of_segments, h1, h2):
     
     return 'SegmentListChanged', selected_segments
 
-    
-    
 
 def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
     list_of_connections = []
@@ -106,6 +111,15 @@ def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
         con.calculate_deviation(c, h1, h2)
         list_of_connections.append(con)
     return list_of_connections
+
+def create_list_of_packages(list_of_levels, c, random = True):
+    list_of_packages = []
+    pack = Package(list_of_levels=list_of_levels)
+    if random:
+        pack.randomize_package()
+    pack.calculate_deviation(list_of_levels, c)
+    list_of_packages.append(pack)
+    return list_of_packages
 
 
 # s0 = (a, b, p, name)
