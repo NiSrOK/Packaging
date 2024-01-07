@@ -37,6 +37,7 @@ class Connection:
         self.b = None
         self.p = None
         self.list_of_segments = list_of_segments
+        self.deviation = None
         self.indent = 0
     
     def calculate_connection(self):
@@ -61,6 +62,18 @@ class Connection:
                 self.deviation = 0
         else:
             self.deviation = abs(self.a - c)
+
+def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
+    list_of_connections = []
+    for _ in range(k):
+        con = Connection(list_of_segments=list_of_segments)
+        # con = approve_length(con, list_of_segments, h1, h2)
+        # if random:
+        #     con.randomize_connection()
+        con.calculate_connection()
+        con.calculate_deviation(c, h1, h2)
+        list_of_connections.append(con)
+    return list_of_connections
 
 # def create_list_of_packages(list_of_columns, c, random = True):
 #     list_of_packages = []
