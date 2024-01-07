@@ -1,0 +1,72 @@
+from random import shuffle, sample
+from math import sqrt
+
+class Package:
+    def __init__(self, list_of_columns: list):
+        self.list_of_columns = list_of_columns
+        self.deviation_x = None
+        self.deviation_y = None
+        self.deviation = None
+        self.row_width = 1
+    
+    def calculate_deviation(self, c_x, c_y):
+        sum_p = 0
+        sum_px = 0
+        sum_py = 0
+        num = 0
+        for column in self.list_of_columns:
+            num += 1
+            sum_p += column.p
+            sum_px += column.p*(column.a + column.indent)
+            sum_py += column.p*(self.row_width*num - self.row_width/2)
+            
+        # self.deviation_x = abs(sum_px / (sum_p*c_x) - 1)*100
+        # self.deviation_y = abs(sum_py / (sum_p*c_y) - 1)*100
+
+        self.deviation_x = abs(sum_px / (sum_p) - c_x)
+        self.deviation_y = abs(sum_py / (sum_p) - c_y)
+            
+        # self.deviation_x = abs(sum_px / (sum_p) - c_x) / 41 * 100
+        # self.deviation_y = abs(sum_py / (sum_p) - c_y) / (num*self.row_width) * 100
+
+        self.deviation = sqrt(self.deviation_x**2 + self.deviation_y**2)
+
+class Connection:
+    def __init__(self, list_of_segments: list):
+        self.a = None
+        self.b = None
+        self.p = None
+        self.list_of_segments = list_of_segments
+        self.indent = 0
+    
+    def calculate_connection(self):
+        # s0 = (a, b, p, name)
+        self.p = self.list_of_segments[0][2] + self.list_of_segments[1][2]
+        self.a = (self.list_of_segments[0][2]*self.list_of_segments[0][0] + self.list_of_segments[1][2]*(self.list_of_segments[0][0] + self.list_of_segments[0][1] + self.list_of_segments[1][0]))/self.p
+        self.b = self.list_of_segments[0][0] + self.list_of_segments[1][0] + self.list_of_segments[0][1] + self.list_of_segments[1][1] - self.a
+        for i in range(2, len(self.list_of_segments)):
+            old_a = self.a
+            self.a = (self.p*self.a + self.list_of_segments[i][2]*(self.a + self.b + self.list_of_segments[i][0]))/(self.p+self.list_of_segments[i][2])
+            self.b = old_a + self.list_of_segments[i][0] + self.b + self.list_of_segments[i][1] - self.a
+            self.p += self.list_of_segments[i][2]
+        return self
+    
+    def calculate_deviation(self, c, h1, h2):
+        if self.a < c:
+            if c > h2 - self.b:
+                self.indent = h2 - self.b - self.a
+                self.deviation = c - h2 + self.b
+            else:
+                self.indent = c - self.a
+                self.deviation = 0
+        else:
+            self.deviation = abs(self.a - c)
+
+# def create_list_of_packages(list_of_columns, c, random = True):
+#     list_of_packages = []
+#     pack = Package(list_of_columns=list_of_columns)
+#     if random:
+#         pack.randomize_package()
+#     pack.calculate_deviation(list_of_columns, c)
+#     list_of_packages.append(pack)
+#     return list_of_packages

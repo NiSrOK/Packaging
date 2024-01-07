@@ -1,0 +1,163 @@
+from classes2D import Package, Connection
+import random
+
+def divide_segments(segments, h1, h2):
+    segments.sort(key=lambda x: x[0])  # Сортируем отрезки по начальным точкам
+
+    result_sets = []
+    current_set = []
+    current_length = 0
+    not_in_any_set = []
+
+    for segment in segments:
+        length = segment[0] + segment[1]  # Длина отрезка
+        if length > h2:
+            not_in_any_set.append(segment)
+            continue
+        if current_length + length <= h2:
+            current_set.append(segment)
+            current_length += length
+        elif current_length >= h1:
+            result_sets.append(current_set)
+            current_set = [segment]
+            current_length = length
+        else:
+            not_in_any_set.append(segment)
+
+    if current_length >= h1:
+        result_sets.append(current_set)
+
+    # Выводим отрезки, которые не попали ни в один набор
+    if not_in_any_set:
+        print("Отрезки, которые не попали ни в один набор:")
+        for segment in not_in_any_set:
+            print(segment)
+    
+    result_connections = []
+    for set in result_sets:
+        con = Connection(list_of_segments=set)
+        result_connections.append(con)
+
+    return result_connections
+
+def population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
+    # Разделение отрезков на наборы
+    connections = divide_segments(list_of_segments, h1, h2)
+    population = []
+    print(connections)
+    for _ in range(k):
+        # if columns > len(connections):
+        columns = len(connections)
+        list_of_columns = random.sample(connections, columns)
+        for col in list_of_columns:
+            random.shuffle(col.list_of_segments)
+            col.calculate_connection()
+            col.calculate_deviation(c_x, h1, h2)
+        individual = Package(list_of_columns)
+        individual.calculate_deviation(c_x, c_y)
+        population.append(individual)
+
+    return population
+
+# Вспомогательная функция для выполнения кроссовера
+def perform_crossover(perm1, perm2):
+    list_of_columns = []
+    count_columns = len(perm1.list_of_columns)
+    column = random.sample(perm1.list_of_columns, 1)
+    column = column[0].list_of_segments
+    list_of_columns.append(column)
+
+    while len(list_of_columns) < count_columns:
+        for i in range(count_columns):
+            column = perm2.list_of_columns[i]
+            column = column.list_of_segments
+            if column not in list_of_columns:
+                list_of_columns.append(column)
+                break
+            if i == count_columns - 1:
+                print("Невозможно выполнить кроссовер")
+                a = input()
+        
+        if len(list_of_columns) < count_columns:
+            for i in range(count_columns):
+                column = perm1.list_of_columns[i]
+                column = column.list_of_segments
+                if column not in list_of_columns:
+                    list_of_columns.append(column)
+                    break
+                if i == count_columns - 1:
+                    print("Невозможно выполнить кроссовер")
+                    a = input()
+
+
+    list_of_columns_obj = []
+    for column in list_of_columns:
+        list_of_columns_obj.append(Connection(list_of_segments=column))
+    child = Package(list_of_columns_obj)
+    return child
+
+
+def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
+    list_of_levels = []
+    
+    # получение начальной популяции
+    population = population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, columns)
+    for p in population:
+        print(p.list_of_columns)
+        # print(p.deviation)
+        # print(p.deviation_x)
+        # print(p.deviation_y)
+        # print('-----------')
+
+    for gen in range(1, g+1):
+        # Рассчет пригодности для каждой перестановки
+        fitness = []
+        for perm in population:
+            fitness.append((perm, perm.deviation))
+        fitness.sort(key=lambda x: x[1])
+        best_perm, best_dev = fitness[0]
+        print(f'Best dev: {best_dev}')
+
+        # Проверка на оптимальное решение
+        if best_dev == 0:
+            break
+
+        # Генерация потомков
+        num_children = k - 1
+        children = []
+        while num_children > 0:
+            perm1, perm2 = random.sample(population, 2)
+            child = perform_crossover(perm1, perm2)
+            for con in child.list_of_columns:
+                con.calculate_connection()
+                con.calculate_deviation(c_x, h1, h2)
+            child.calculate_deviation(c_x, c_y)
+            # Обмен двумя случайными сегментами в потомке
+            # i, j = random.sample(range(len(set)), 2)
+            # child.list_of_segments[i], child.list_of_segments[j] = child.list_of_segments[j], child.list_of_segments[i]
+            children.append(child)
+            num_children -= 1
+
+        # Объединение родительской и дочерней популяции
+        combined_pop = fitness + [(child, child.deviation) for child in children]
+        combined_pop.sort(key=lambda x: x[1])
+        # for per in combined_pop:
+        #     print(per[0])
+        # Замена худших перестановок лучшими
+        # new_population = [combined_pop[i][0] for i in range(k-1)] + [best_perm]
+        new_population = [combined_pop[i][0] for i in range(k)]
+        # print(len(new_population))
+        
+        population = new_population
+
+    # Вывод наилучшей перестановки, ее значение пригодности, начального отступа
+ 
+    print("Лучшая расстановка:", fitness[0][0].list_of_columns)
+    print("Лучшее значение отклонения от целевого центра тяжести:", fitness[0][1])
+    # if res[0].indent != None:
+    #     print("Отступ от левого края для соединения:", res[0].indent)
+    return fitness[0][1]
+
+
+    if find == False:
+        print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
