@@ -8,12 +8,17 @@ class Package:
         self.deviation_y = None
         self.deviation = None
         self.row_width = 1
+
+        deviation_proc = None
+        deviation_x_proc = None
+        deviation_y_proc = None
     
     def calculate_deviation(self, c_x, c_y):
         sum_p = 0
         sum_px = 0
         sum_py = 0
         num = 0
+        h2 = 41
         for column in self.list_of_columns:
             num += 1
             sum_p += column.p
@@ -26,8 +31,9 @@ class Package:
         self.deviation_x = abs(sum_px / (sum_p) - c_x)
         self.deviation_y = abs(sum_py / (sum_p) - c_y)
             
-        # self.deviation_x = abs(sum_px / (sum_p) - c_x) / 41 * 100
-        # self.deviation_y = abs(sum_py / (sum_p) - c_y) / (num*self.row_width) * 100
+        self.deviation_x_proc = abs(sum_px / (sum_p) - c_x) / h2 * 100
+        self.deviation_y_proc = abs(sum_py / (sum_p) - c_y) / (num*self.row_width) * 100
+        self.deviation_proc = sqrt(self.deviation_x_proc**2 + self.deviation_y_proc**2)
 
         self.deviation = sqrt(self.deviation_x**2 + self.deviation_y**2)
 

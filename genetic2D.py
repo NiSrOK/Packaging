@@ -117,8 +117,13 @@ def divide_segments(segments, h1, h2):
         else:
             not_in_any_set.append(segment)
 
-    if current_length >= h1:
+    # if current_length >= h1:
+    #     result_sets.append(current_set)
+    
+    if current_length >= h1 and current_length <= h2:
         result_sets.append(current_set)
+    elif current_length != 0:
+        not_in_any_set.append(current_set)
 
     # Выводим отрезки, которые не попали ни в один набор
     if not_in_any_set:
@@ -245,7 +250,7 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
             fitness.append((perm, perm.deviation))
         fitness.sort(key=lambda x: x[1])
         best_perm, best_dev = fitness[0]
-        print(f'Best dev: {best_dev}')
+        # print(f'Best dev: {best_dev}')
 
         # Проверка на оптимальное решение
         if best_dev == 0:
@@ -281,8 +286,15 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
 
     # Вывод наилучшей перестановки, ее значение пригодности, начального отступа
  
-    print("Лучшая расстановка:", fitness[0][0].list_of_columns)
-    print("Лучшее значение отклонения от целевого центра тяжести:", fitness[0][1])
+    print("Лучшая расстановка:")
+    for col in fitness[0][0].list_of_columns:
+        print(col.list_of_segments)
+    print(f'Минимальное отклонение: {fitness[0][0].deviation}')
+    print(f'Минимальное отклонение x: {fitness[0][0].deviation_x}')
+    print(f'Минимальное отклонение y: {fitness[0][0].deviation_y}')
+    print(f'Минимальное отклонение %: {fitness[0][0].deviation_proc}')
+    print(f'Минимальное отклонение x %: {fitness[0][0].deviation_x_proc}')
+    print(f'Минимальное отклонение y %: {fitness[0][0].deviation_y_proc}')
     # if res[0].indent != None:
     #     print("Отступ от левого края для соединения:", res[0].indent)
     return fitness[0][1]
