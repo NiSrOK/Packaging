@@ -1,5 +1,7 @@
 from random import shuffle, sample
 from math import sqrt
+import copy
+import random
 
 class Package:
     def __init__(self, list_of_columns: list):
@@ -9,16 +11,16 @@ class Package:
         self.deviation = None
         self.row_width = 1
 
-        deviation_proc = None
-        deviation_x_proc = None
-        deviation_y_proc = None
+        self.deviation_proc = None
+        self.deviation_x_proc = None
+        self.deviation_y_proc = None
     
-    def calculate_deviation(self, c_x, c_y):
+    def calculate_deviation(self, c_x, c_y, h2):
         sum_p = 0
         sum_px = 0
         sum_py = 0
         num = 0
-        h2 = 41
+        # h2 = 41
         for column in self.list_of_columns:
             num += 1
             sum_p += column.p
@@ -48,15 +50,21 @@ class Connection:
     
     def calculate_connection(self):
         # s0 = (a, b, p, name)
-        self.p = self.list_of_segments[0][2] + self.list_of_segments[1][2]
-        self.a = (self.list_of_segments[0][2]*self.list_of_segments[0][0] + self.list_of_segments[1][2]*(self.list_of_segments[0][0] + self.list_of_segments[0][1] + self.list_of_segments[1][0]))/self.p
-        self.b = self.list_of_segments[0][0] + self.list_of_segments[1][0] + self.list_of_segments[0][1] + self.list_of_segments[1][1] - self.a
-        for i in range(2, len(self.list_of_segments)):
-            old_a = self.a
-            self.a = (self.p*self.a + self.list_of_segments[i][2]*(self.a + self.b + self.list_of_segments[i][0]))/(self.p+self.list_of_segments[i][2])
-            self.b = old_a + self.list_of_segments[i][0] + self.b + self.list_of_segments[i][1] - self.a
-            self.p += self.list_of_segments[i][2]
-        return self
+        if len(self.list_of_segments) == 1:
+            self.a = self.list_of_segments[0][0]
+            self.b = self.list_of_segments[0][1]
+            self.p = self.list_of_segments[0][2]
+            return self
+        else:
+            self.p = self.list_of_segments[0][2] + self.list_of_segments[1][2]
+            self.a = (self.list_of_segments[0][2]*self.list_of_segments[0][0] + self.list_of_segments[1][2]*(self.list_of_segments[0][0] + self.list_of_segments[0][1] + self.list_of_segments[1][0]))/self.p
+            self.b = self.list_of_segments[0][0] + self.list_of_segments[1][0] + self.list_of_segments[0][1] + self.list_of_segments[1][1] - self.a
+            for i in range(2, len(self.list_of_segments)):
+                old_a = self.a
+                self.a = (self.p*self.a + self.list_of_segments[i][2]*(self.a + self.b + self.list_of_segments[i][0]))/(self.p+self.list_of_segments[i][2])
+                self.b = old_a + self.list_of_segments[i][0] + self.b + self.list_of_segments[i][1] - self.a
+                self.p += self.list_of_segments[i][2]
+            return self
     
     def calculate_deviation(self, c, h1, h2):
         if self.a < c:
@@ -69,10 +77,12 @@ class Connection:
         else:
             self.deviation = abs(self.a - c)
 
-def create_list_of_connections(list_of_segments, k, c, h1, h2, random = True):
+def create_list_of_connections(list_of_segments, k, c, h1, h2, rand = True):
     list_of_connections = []
     for _ in range(k):
-        con = Connection(list_of_segments=list_of_segments)
+        copy_list_of_segments = copy.deepcopy(list_of_segments)
+        random.shuffle(copy_list_of_segments)
+        con = Connection(list_of_segments=copy_list_of_segments)
         # con = approve_length(con, list_of_segments, h1, h2)
         # if random:
         #     con.randomize_connection()

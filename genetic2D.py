@@ -27,9 +27,10 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
     list_of_columns = []
     # Разделение отрезков на наборы
     sets = list_of_segments
-    print(sets)
-    # Создание начальной популяции
+    # print(sets)
+    #для каждого столбца из набора
     for set in sets:
+        #создадим популяцию из объектов в одном столбце 
         population = create_list_of_connections(set, k, c, h1, h2)
 
         for gen in range(1, g+1):
@@ -78,10 +79,10 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
         find = False
         for res in fitness:
             if (res[0].a + res[0].b >= h1) and (res[0].a + res[0].b <= h2):
-                print("Лучшая расстановка:", res[0].list_of_segments)
-                print("Лучшее значение отклонения от целевого центра тяжести:", res[1])
-                if res[0].indent != None:
-                    print("Отступ от левого края для соединения:", res[0].indent)
+                # print("Лучшая расстановка:", res[0].list_of_segments)
+                # print("Лучшее значение отклонения от целевого центра тяжести:", res[1])
+                # if res[0].indent != None:
+                #     print("Отступ от левого края для соединения:", res[0].indent)
                 find = True
                 list_of_columns.append(res[0])
                 break
@@ -94,14 +95,22 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
         if len(sets) == len(list_of_columns):
             return list_of_columns
 
+# функция для разделения всех отрезков на наборы соответствующие ограничениям по длине
 def divide_segments(segments, h1, h2):
-    segments.sort(key=lambda x: x[0])  # Сортируем отрезки по начальным точкам
+    # segments.sort(key=lambda x: x[0])  # Сортируем отрезки по начальным точкам
+    random.shuffle(segments)
 
     result_sets = []
     current_set = []
     current_length = 0
     not_in_any_set = []
 
+    # segments_in_use = []
+    # flag = True
+
+    # while flag:
+    #     if len(segments) == len(segments_in_use) or len(segments) == (len(segments_in_use) + len(not_in_any_set)):
+    #         break
     for segment in segments:
         length = segment[0] + segment[1]  # Длина отрезка
         if length > h2:
@@ -138,22 +147,45 @@ def divide_segments(segments, h1, h2):
 
     return result_sets
 
-def population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
-    # Разделение отрезков на наборы
-    connections = divide_segments(list_of_segments, h1, h2)
-    connections = genetic_columns(connections, k, g, c_x, h1, h2)
+def get_best_columns(base_list_columns, count_columns):
+    list_len_column = []
+
+    for column in base_list_columns:
+        len_column = 0
+        for segment in column:
+            len_column += segment[0] + segment[1]
+        list_len_column.append((len_column, column))  # Сохраняем пару (длина столбца, столбец)
+
+    # Сортируем столбцы по длине в убывающем порядке
+    sorted_columns = sorted(list_len_column, reverse=True)
+    print(sorted_columns)
+
+    # Возвращаем первые count_columns самых длинных столбцов
+    return [column for length, column in sorted_columns[:count_columns]]
+
+def population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns):
+    # Разделение отрезков на наборы соответствующие ограничениям по длине
+    base_list_columns = divide_segments(list_of_segments, h1, h2)
+    if count_columns is not None and len(base_list_columns) > count_columns:
+        # Возьмем нужное количество столбцов, приоритет - максимальная длина
+        best_list_columns = get_best_columns(base_list_columns, count_columns)
+    else:
+        # Если нужное количество столбцов уже соответствует - берем все 
+        best_list_columns = base_list_columns
+    # Получаем список списков с лучшими расстановками объектов внутри столбцов 
+    connections = genetic_columns(best_list_columns, k, g, c_x, h1, h2)
     population = []
-    print(connections)
+    # print(connections)
     for _ in range(k):
         # if columns > len(connections):
-        columns = len(connections)
-        list_of_columns = random.sample(connections, columns)
+        count_columns = len(connections)
+        list_of_columns = random.sample(connections, count_columns)
         # for col in list_of_columns:
         #     random.shuffle(col.list_of_segments)
         #     col.calculate_connection()
         #     col.calculate_deviation(c_x, h1, h2)
         individual = Package(list_of_columns)
-        individual.calculate_deviation(c_x, c_y)
+        individual.calculate_deviation(c_x, c_y, h2)
         population.append(individual)
 
     return population
@@ -233,9 +265,9 @@ def perform_crossover(perm1, perm2):
 #     return child
 
 
-def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
+def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns = None, calculate = False):
     # получение начальной популяции
-    population = population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, columns)
+    population = population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns)
     # for p in population:
     #     print(p.list_of_columns)
         # print(p.deviation)
@@ -265,7 +297,7 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
             for con in child.list_of_columns:
                 con.calculate_connection()
                 con.calculate_deviation(c_x, h1, h2)
-            child.calculate_deviation(c_x, c_y)
+            child.calculate_deviation(c_x, c_y, h2)
             # Обмен двумя случайными сегментами в потомке
             # i, j = random.sample(range(len(set)), 2)
             # child.list_of_segments[i], child.list_of_segments[j] = child.list_of_segments[j], child.list_of_segments[i]
@@ -285,20 +317,29 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns):
         population = new_population
 
     # Вывод наилучшей перестановки, ее значение пригодности, начального отступа
- 
-    print("Лучшая расстановка:")
-    for col in fitness[0][0].list_of_columns:
-        print(col.list_of_segments)
-    print(f'Минимальное отклонение: {fitness[0][0].deviation}')
-    print(f'Минимальное отклонение x: {fitness[0][0].deviation_x}')
-    print(f'Минимальное отклонение y: {fitness[0][0].deviation_y}')
-    print(f'Минимальное отклонение %: {fitness[0][0].deviation_proc}')
-    print(f'Минимальное отклонение x %: {fitness[0][0].deviation_x_proc}')
-    print(f'Минимальное отклонение y %: {fitness[0][0].deviation_y_proc}')
-    # if res[0].indent != None:
-    #     print("Отступ от левого края для соединения:", res[0].indent)
-    return fitness[0][1]
+    
+    if calculate:
+        # print("Лучшая расстановка генетическим:")
+        # for col in fitness[0][0].list_of_columns:
+        #     print(col.list_of_segments)
+        return fitness[0][0].deviation
+    else:
+        print("Лучшая расстановка:")
+        i = 1
+        for col in fitness[0][0].list_of_columns:
+            print(f'{i}-ый столбец')
+            print(col.list_of_segments)
+            print(f'Смещение = {col.indent}')
+            i += 1
+        print(f'Минимальное отклонение: {fitness[0][0].deviation}')
+        # print(f'Минимальное отклонение x: {fitness[0][0].deviation_x}')
+        # print(f'Минимальное отклонение y: {fitness[0][0].deviation_y}')
+        # print(f'Минимальное отклонение %: {fitness[0][0].deviation_proc}')
+        # print(f'Минимальное отклонение x %: {fitness[0][0].deviation_x_proc}')
+        # print(f'Минимальное отклонение y %: {fitness[0][0].deviation_y_proc}')
+        # if res[0].indent != None:
+        #     print("Отступ от левого края для соединения:", res[0].indent)
 
 
-    if find == False:
-        print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
+    # if find == False:
+    #     print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
