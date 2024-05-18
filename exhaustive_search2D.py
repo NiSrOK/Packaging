@@ -44,14 +44,14 @@ def divide_segments(segments, h1, h2, c_x):
 
     return result_connections
 
-def exhaustive_search(list_of_segments, c_x, c_y, h1, h2, type = 'work'):
+def exhaustive_search(list_of_segments, c_x, c_y, h1, h2, count_columns, type = 'work'):
     
     permutations = list(itertools.permutations(list_of_segments))
     # print(len(permutations))
     population = []
     for perm in permutations:
         columns = divide_segments(perm, h1, h2, c_x)
-        individual = Package(columns)
+        individual = Package(columns, count_columns)
         individual.calculate_deviation(c_x, c_y, h2)
         population.append(individual)
     

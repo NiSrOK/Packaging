@@ -14,13 +14,13 @@ def generate_base_population(n):
         list_of_segments.append((a, b, p, name))
     return list_of_segments
 
-def calculate_length(list_of_segments):
-    length = 0
-    for i in range(len(list_of_segments)):
-        length += list_of_segments[i][0] + list_of_segments[i][1]
-    return length
+# def calculate_length(list_of_segments):
+#     length = 0
+#     for i in range(len(list_of_segments)):
+#         length += list_of_segments[i][0] + list_of_segments[i][1]
+#     return length
 
-def tuner(c_x, c_y, h1, h2):
+def tuner(c_x, c_y, h1, h2, count_columns):
     wb = Workbook()
     ws = wb.active
     ws[f'A1'] = 'k'
@@ -33,8 +33,8 @@ def tuner(c_x, c_y, h1, h2):
     # exhaustive_res = save_exhaustive(c_x, c_y, h1, h2, 'data.json', 10, 10)
     # exhaustive_res = read_json('data.json')
     population = generate_base_population(300)
-    for k in range(2, 30):
-        for g in range(1, 30):
+    for k in range(2, 100, 2):
+        for g in range(2, 100, 2):
             # res = []
             # count = 0
             # total_time_genetic = 0
@@ -43,7 +43,8 @@ def tuner(c_x, c_y, h1, h2):
 
             print(f'k = {k}, g = {g}')
             start_time_genetic = timeit.default_timer()
-            gen_dev = genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns = 1, calculate=True)
+            # gen_dev = genetic(list_of_segments, k, g, c_x, c_y, h1, h2, columns = 1, calculate=True)
+            gen_dev = genetic(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns, type='calculate')
             end_time_genetic = timeit.default_timer()
             total_time_genetic = end_time_genetic - start_time_genetic
             
@@ -66,7 +67,7 @@ def tuner(c_x, c_y, h1, h2):
             ws[f'D{row}'] = total_time_genetic
             # ws[f'E{row}'] = total_time_exhaustive / count
             row += 1
-            wb.save("tuner7.xlsx")
+            wb.save("tunerAfterUpdate.xlsx")
     # wb.save("tuner5.xlsx")
     return glob_res
 
@@ -103,11 +104,12 @@ def read_data(file_path):
     return data
 
 
-c_x = 100
-c_y = 1.5
+c_x = 50
+c_y = 10
+count_columns = 100
 h1 = 1 # минимальная длина
 h2 = 120 # максимальная длина
-res = tuner(c_x, c_y, h1, h2)
+res = tuner(c_x, c_y, h1, h2, count_columns)
 # res = read_data('tuner6.xlsx')
 # data_points = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
 plot_3d_graph(res)

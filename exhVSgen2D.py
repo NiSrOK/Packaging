@@ -15,6 +15,7 @@ def generate_base_population(n):
     return list_of_segments
 
 def tuner(c_x, c_y, h1, h2):
+    count_columns = 3
     wb = Workbook()
     ws = wb.active
     ws[f'A1'] = 'Отклонение генетический 1 набор'
@@ -30,15 +31,15 @@ def tuner(c_x, c_y, h1, h2):
         list_of_segments = population
 
         start_time_genetic = timeit.default_timer()
-        gen_dev_total_1 = genetic(list_of_segments, 30, 30, c_x, c_y, h1, h2, count_columns = 3, calculate=False)
+        gen_dev_total_1 = genetic(list_of_segments, 30, 30, c_x, c_y, h1, h2, count_columns, type='calculate')
         end_time_genetic = timeit.default_timer()
         total_time_genetic_1 = end_time_genetic - start_time_genetic
-        print(f'Отклонение {gen_dev_total_1}')
+        print(f'Отклонение генетический 1 {gen_dev_total_1}')
 
         gen_dev_total_more = None
         start_time_genetic = timeit.default_timer()
         for _ in range(20):
-            gen_dev = genetic(list_of_segments, 30, 30, c_x, c_y, h1, h2, count_columns = None, calculate=True)
+            gen_dev = genetic(list_of_segments, 30, 30, c_x, c_y, h1, h2, count_columns, type='calculate')
             if gen_dev_total_more is None or gen_dev_total_more > gen_dev:
                 gen_dev_total_more = gen_dev
         end_time_genetic = timeit.default_timer()
@@ -46,7 +47,7 @@ def tuner(c_x, c_y, h1, h2):
         print(f'Отклонение генетический 20 {gen_dev_total_more}')
         
         start_time_exhaustive = timeit.default_timer()
-        ex_dev_best, ex_dev_worst = exhaustive_search(list_of_segments, c_x, c_y, h1, h2, type='calculate')
+        ex_dev_best, ex_dev_worst = exhaustive_search(list_of_segments, c_x, c_y, h1, h2, count_columns, type='calculate')
         end_time_exhaustive = timeit.default_timer()
         total_time_exhaustive = end_time_exhaustive - start_time_exhaustive
         print(f'Отклонение ПП лучший {ex_dev_best}')
@@ -66,11 +67,11 @@ def tuner(c_x, c_y, h1, h2):
         ws[f'F{row}'] = total_time_genetic_more
         ws[f'G{row}'] = total_time_exhaustive
         row += 1
-        wb.save("tunerVS5.xlsx")
+        wb.save("tunerVsAfterUpdateY2.xlsx")
 
 
-c_x = 50
-c_y = 1.5
+c_x = 70 # целевой центр тяжести по x
+c_y = 0.5 # целевой центр тяжести по y
 h1 = 1 # минимальная длина
 # h2 = 120 # максимальная длина
 h2 = 80 # максимальная длина

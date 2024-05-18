@@ -96,7 +96,7 @@ def generate_base_population(n):
         list_of_segments.append((a, b, p, name))
     return list_of_segments
 
-def tuner(c_x, c_y, h1, h2):
+def tuner(c_x, h1, h2):
     wb = Workbook()
     ws = wb.active
     ws[f'A1'] = 'Отклонение генетический 1 набор'
@@ -138,8 +138,7 @@ def tuner(c_x, c_y, h1, h2):
 
 
 c_x = 50
-c_y = 1.5
 h1 = 1 # минимальная длина
 # h2 = 120 # максимальная длина
 h2 = 500 # максимальная длина
-res = tuner(c_x, c_y, h1, h2)
+res = tuner(c_x, h1, h2)

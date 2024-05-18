@@ -4,12 +4,14 @@ import copy
 import random
 
 class Package:
-    def __init__(self, list_of_columns: list):
+    def __init__(self, list_of_columns: list, count_of_columns: int):
         self.list_of_columns = list_of_columns
         self.deviation_x = None
         self.deviation_y = None
         self.deviation = None
         self.row_width = 1
+        self.indent_y = 0
+        self.count_of_columns = count_of_columns
 
         self.deviation_proc = None
         self.deviation_x_proc = None
@@ -32,12 +34,20 @@ class Package:
 
         self.deviation_x = abs(sum_px / (sum_p) - c_x)
         self.deviation_y = abs(sum_py / (sum_p) - c_y)
-            
+
+        free_columns = self.count_of_columns - num
+        if (c_y > sum_py/sum_p) and (free_columns > 0):
+            if free_columns > (c_y - sum_py/sum_p):
+                self.deviation_y = 0
+                self.indent_y = c_y - sum_py/sum_p
+            else:
+                self.deviation_y = (c_y - sum_py/sum_p) - free_columns
+                self.indent_y = free_columns
+
+        self.deviation = sqrt(self.deviation_x**2 + self.deviation_y**2)
         self.deviation_x_proc = abs(sum_px / (sum_p) - c_x) / h2 * 100
         self.deviation_y_proc = abs(sum_py / (sum_p) - c_y) / (num*self.row_width) * 100
         self.deviation_proc = sqrt(self.deviation_x_proc**2 + self.deviation_y_proc**2)
-
-        self.deviation = sqrt(self.deviation_x**2 + self.deviation_y**2)
 
 class Connection:
     def __init__(self, list_of_segments: list):
