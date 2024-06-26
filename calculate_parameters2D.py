@@ -32,7 +32,7 @@ def tuner(c_x, c_y, h1, h2, count_columns):
     glob_res = []
     # exhaustive_res = save_exhaustive(c_x, c_y, h1, h2, 'data.json', 10, 10)
     # exhaustive_res = read_json('data.json')
-    population = generate_base_population(300)
+    population = generate_base_population(200)
     for k in range(2, 100, 2):
         for g in range(2, 100, 2):
             # res = []
@@ -67,9 +67,22 @@ def tuner(c_x, c_y, h1, h2, count_columns):
             ws[f'D{row}'] = total_time_genetic
             # ws[f'E{row}'] = total_time_exhaustive / count
             row += 1
-            wb.save("tunerAfterUpdate.xlsx")
+            wb.save("tunerAfterUpdate200.xlsx")
     # wb.save("tuner5.xlsx")
     return glob_res
+
+# def plot_3d_graph(data):
+#     # Разделение данных на отдельные списки для каждой координаты
+#     x_data, y_data, z_data = zip(*data)
+
+#     # Создание трехмерного графика
+#     fig = go.Figure(data=[go.Scatter3d(x=x_data, y=y_data, z=z_data, mode='markers', marker=dict(color='red', size=3))])
+
+#     # Настройка меток осей и установка логарифмической шкалы для оси Z
+#     fig.update_layout(scene=dict(xaxis_title='k', yaxis_title='g', zaxis_title='Отклонение от целевого центра тяжести', zaxis=dict(type='log')))
+
+#     # Отображение графика
+#     fig.show()
 
 def plot_3d_graph(data):
     # Разделение данных на отдельные списки для каждой координаты
@@ -79,7 +92,23 @@ def plot_3d_graph(data):
     fig = go.Figure(data=[go.Scatter3d(x=x_data, y=y_data, z=z_data, mode='markers', marker=dict(color='red', size=3))])
 
     # Настройка меток осей и установка логарифмической шкалы для оси Z
-    fig.update_layout(scene=dict(xaxis_title='k', yaxis_title='g', zaxis_title='Отклонение от целевого центра тяжести', zaxis=dict(type='log')))
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(
+                title=dict(text='k', font=dict(size=20)),  # Увеличение размера шрифта названия оси X
+                tickfont=dict(size=14)  # Увеличение размера шрифта меток оси X
+            ),
+            yaxis=dict(
+                title=dict(text='g', font=dict(size=20)),  # Увеличение размера шрифта названия оси Y
+                tickfont=dict(size=14)  # Увеличение размера шрифта меток оси Y
+            ),
+            zaxis=dict(
+                title=dict(text='Отклонение от целевого центра тяжести', font=dict(size=20)),  # Увеличение размера шрифта названия оси Z
+                type='log',
+                tickfont=dict(size=14)  # Увеличение размера шрифта меток оси Z
+            ),
+        )
+    )
 
     # Отображение графика
     fig.show()
@@ -109,7 +138,7 @@ c_y = 10
 count_columns = 100
 h1 = 1 # минимальная длина
 h2 = 120 # максимальная длина
-res = tuner(c_x, c_y, h1, h2, count_columns)
-# res = read_data('tuner6.xlsx')
+# res = tuner(c_x, c_y, h1, h2, count_columns)
+res = read_data('tunerAfterUpdate200.xlsx')
 # data_points = [(1, 2, 3), (4, 5, 6), (7, 8, 9)]
 plot_3d_graph(res)

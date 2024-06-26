@@ -1,5 +1,7 @@
 from classes2D import Package, Connection, create_list_of_connections
 import random
+import tkinter as tk
+from tkinter import ttk
 
 # Вспомогательная функция для выполнения кроссовера
 def perform_crossover_columns(perm1, perm2):
@@ -11,7 +13,6 @@ def perform_crossover_columns(perm1, perm2):
     child = Connection(list_of_segments=[None] * n)
     for i in range(a, b+1):
         child.list_of_segments[i] = perm1.list_of_segments[i]
-    # print(f'Хромосома от первого родителя: {child.list_of_segments}')
     j = 0
     for i in range(n):
         if j == a:
@@ -19,7 +20,7 @@ def perform_crossover_columns(perm1, perm2):
         if perm2.list_of_segments[i] not in child.list_of_segments:
             child.list_of_segments[j] = perm2.list_of_segments[i]
             j += 1
-    # print(f'Хромосома от второго родителя: {child.list_of_segments}')
+
     return child
 
 
@@ -27,7 +28,6 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
     list_of_columns = []
     # Разделение отрезков на наборы
     sets = list_of_segments
-    # print(sets)
     #для каждого столбца из набора
     for set in sets:
         #создадим популяцию из объектов в одном столбце 
@@ -37,12 +37,9 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
             # Рассчет пригодности для каждой перестановки
             fitness = []
             for perm in population:
-                # print(perm.list_of_segments)
                 fitness.append((perm, perm.deviation))
             fitness.sort(key=lambda x: x[1])
             best_perm, best_dev = fitness[0]
-            # print(f'best_perm: {best_perm}')
-            # print(f'best_dev: {best_dev}')
 
             # Проверка на оптимальное решение
             if best_dev == 0:
@@ -54,7 +51,6 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
             while num_children > 0:
                 perm1, perm2 = random.sample(population, 2)
                 child = perform_crossover_columns(perm1, perm2)
-                # child = approve_length(child, list_of_segments, h1, h2)
                 child.calculate_connection()
                 child.calculate_deviation(c, h1, h2)
                 # Обмен двумя случайными сегментами в потомке
@@ -67,12 +63,7 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
             # Объединение родительской и дочерней популяции
             combined_pop = fitness + [(child, child.deviation) for child in children]
             combined_pop.sort(key=lambda x: x[1])
-            # for per in combined_pop:
-            #     print(per[0])
-            # Замена худших перестановок лучшими
-            # new_population = [combined_pop[i][0] for i in range(k-1)] + [best_perm]
             new_population = [combined_pop[i][0] for i in range(k)]
-            # print(len(new_population))
             
             population = new_population
 
@@ -80,15 +71,9 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
         find = False
         for res in fitness:
             if (res[0].a + res[0].b >= h1) and (res[0].a + res[0].b <= h2):
-                # print("Лучшая расстановка:", res[0].list_of_segments)
-                # print("Лучшее значение отклонения от целевого центра тяжести:", res[1])
-                # if res[0].indent != None:
-                #     print("Отступ от левого края для соединения:", res[0].indent)
                 find = True
                 list_of_columns.append(res[0])
                 break
-                # return res[1]
-
 
         if find == False:
             print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
@@ -98,7 +83,6 @@ def genetic_columns(list_of_segments, k, g, c, h1, h2):
 
 # функция для разделения всех отрезков на наборы соответствующие ограничениям по длине
 def divide_segments(segments, h1, h2):
-    # segments.sort(key=lambda x: x[0])  # Сортируем отрезки по начальным точкам
     random.shuffle(segments)
 
     result_sets = []
@@ -106,12 +90,6 @@ def divide_segments(segments, h1, h2):
     current_length = 0
     not_in_any_set = []
 
-    # segments_in_use = []
-    # flag = True
-
-    # while flag:
-    #     if len(segments) == len(segments_in_use) or len(segments) == (len(segments_in_use) + len(not_in_any_set)):
-    #         break
     for segment in segments:
         length = segment[0] + segment[1]  # Длина отрезка
         if length > h2:
@@ -126,25 +104,11 @@ def divide_segments(segments, h1, h2):
             current_length = length
         else:
             not_in_any_set.append(segment)
-
-    # if current_length >= h1:
-    #     result_sets.append(current_set)
     
     if current_length >= h1 and current_length <= h2:
         result_sets.append(current_set)
     elif current_length != 0:
         not_in_any_set.append(current_set)
-
-    # Выводим отрезки, которые не попали ни в один набор
-    # if not_in_any_set:
-    #     print("Отрезки, которые не попали ни в один набор:")
-    #     for segment in not_in_any_set:
-    #         print(segment)
-    
-    # result_connections = []
-    # for set in result_sets:
-    #     con = Connection(list_of_segments=set)
-    #     result_connections.append(con)
 
     return result_sets
 
@@ -159,7 +123,6 @@ def get_best_columns(base_list_columns, count_columns):
 
     # Сортируем столбцы по длине в убывающем порядке
     sorted_columns = sorted(list_len_column, reverse=True)
-    # print(sorted_columns)
 
     # Возвращаем первые count_columns самых длинных столбцов
     return [column for length, column in sorted_columns[:count_columns]]
@@ -176,15 +139,9 @@ def population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, count_colum
     # Получаем список списков с лучшими расстановками объектов внутри столбцов 
     connections = genetic_columns(best_list_columns, k, g, c_x, h1, h2)
     population = []
-    # print(connections)
     for _ in range(k):
-        # if columns > len(connections):
         count_columns = len(connections)
         list_of_columns = random.sample(connections, count_columns)
-        # for col in list_of_columns:
-        #     random.shuffle(col.list_of_segments)
-        #     col.calculate_connection()
-        #     col.calculate_deviation(c_x, h1, h2)
         individual = Package(list_of_columns, count_columns_base)
         individual.calculate_deviation(c_x, c_y, h2)
         population.append(individual)
@@ -202,7 +159,6 @@ def perform_crossover(perm1, perm2, count_columns_base):
     while len(list_of_columns) < count_columns:
         for i in range(count_columns):
             column = perm2.list_of_columns[i]
-            # column = column.list_of_segments
             if column not in list_of_columns:
                 list_of_columns.append(column)
                 break
@@ -213,7 +169,6 @@ def perform_crossover(perm1, perm2, count_columns_base):
         if len(list_of_columns) < count_columns:
             for i in range(count_columns):
                 column = perm1.list_of_columns[i]
-                # column = column.list_of_segments
                 if column not in list_of_columns:
                     list_of_columns.append(column)
                     break
@@ -221,61 +176,51 @@ def perform_crossover(perm1, perm2, count_columns_base):
                     print("Невозможно выполнить кроссовер")
                     a = input()
 
-
-    # list_of_columns_obj = []
-    # for column in list_of_columns:
-    #     list_of_columns_obj.append(Connection(list_of_segments=column))
     child = Package(list_of_columns, count_columns_base)
     return child
 
-# # Вспомогательная функция для выполнения кроссовера
-# def perform_crossover(perm1, perm2):
-#     list_of_columns = []
-#     count_columns = len(perm1.list_of_columns)
-#     column = random.sample(perm1.list_of_columns, 1)
-#     column = column[0].list_of_segments
-#     list_of_columns.append(column)
+class FitnessApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Информация об упаковке")
 
-#     while len(list_of_columns) < count_columns:
-#         for i in range(count_columns):
-#             column = perm2.list_of_columns[i]
-#             column = column.list_of_segments
-#             if column not in list_of_columns:
-#                 list_of_columns.append(column)
-#                 break
-#             if i == count_columns - 1:
-#                 print("Невозможно выполнить кроссовер")
-#                 a = input()
-        
-#         if len(list_of_columns) < count_columns:
-#             for i in range(count_columns):
-#                 column = perm1.list_of_columns[i]
-#                 column = column.list_of_segments
-#                 if column not in list_of_columns:
-#                     list_of_columns.append(column)
-#                     break
-#                 if i == count_columns - 1:
-#                     print("Невозможно выполнить кроссовер")
-#                     a = input()
+        self.main_frame = ttk.Frame(self.root, padding="10")
+        self.main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
+        self.info_label = ttk.Label(self.main_frame, text="Упаковка:")
+        self.info_label.grid(row=0, column=0, sticky=tk.W)
+        self.row = 1
 
-#     list_of_columns_obj = []
-#     for column in list_of_columns:
-#         list_of_columns_obj.append(Connection(list_of_segments=column))
-#     child = Package(list_of_columns_obj)
-#     return child
+    def display_fitness_info(self, fitness_data):
+        for widget in self.main_frame.winfo_children()[1:]:
+            widget.destroy()  # Удаляем предыдущие виджеты, кроме главной метки
 
+        row = 1
+        for fit in fitness_data:
+            for i, col in enumerate(fit[0].list_of_columns, start=1):
+                col_label = ttk.Label(self.main_frame, text=f'{i}-ый столбец:')
+                col_label.grid(row=row, column=0, sticky=tk.W)
+                row += 1
+
+                seg_label = ttk.Label(self.main_frame, text=f'Отрезки: {col.list_of_segments}')
+                seg_label.grid(row=row, column=1, sticky=tk.W)
+                row += 1
+
+                indent_label = ttk.Label(self.main_frame, text=f'Смещение внутри столбца: {"%.3f" % col.indent}')
+                indent_label.grid(row=row, column=1, sticky=tk.W)
+                row += 1
+
+            indent_y_label = ttk.Label(self.main_frame, text=f'Смещение упаковки: {"%.3f" % fit[0].indent_y}')
+            indent_y_label.grid(row=row, column=0, sticky=tk.W)
+            row += 1
+
+            deviation_label = ttk.Label(self.main_frame, text=f'Минимальное отклонение упаковки: {"%.3f" % fit[0].deviation}')
+            deviation_label.grid(row=row, column=0, sticky=tk.W)
+            row += 1
 
 def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns, type):
     # получение начальной популяции
     population = population_preparation(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns)
-    # print(len(population))
-    # for p in population:
-    #     print(p.list_of_columns)
-        # print(p.deviation)
-        # print(p.deviation_x)
-        # print(p.deviation_y)
-        # print('-----------')
 
     for gen in range(1, g+1):
         # Рассчет пригодности для каждой перестановки
@@ -284,7 +229,6 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns, type):
             fitness.append((perm, perm.deviation))
         fitness.sort(key=lambda x: x[1])
         best_perm, best_dev = fitness[0]
-        # print(f'Best dev: {best_dev}')
 
         # Проверка на оптимальное решение
         if best_dev == 0:
@@ -300,51 +244,31 @@ def genetic(list_of_segments, k, g, c_x, c_y, h1, h2, count_columns, type):
                 con.calculate_connection()
                 con.calculate_deviation(c_x, h1, h2)
             child.calculate_deviation(c_x, c_y, h2)
-            # Обмен двумя случайными сегментами в потомке
-            # i, j = random.sample(range(len(set)), 2)
-            # child.list_of_segments[i], child.list_of_segments[j] = child.list_of_segments[j], child.list_of_segments[i]
             children.append(child)
             num_children -= 1
 
         # Объединение родительской и дочерней популяции
         combined_pop = fitness + [(child, child.deviation) for child in children]
         combined_pop.sort(key=lambda x: x[1])
-        # for per in combined_pop:
-        #     print(per[0])
-        # Замена худших перестановок лучшими
-        # new_population = [combined_pop[i][0] for i in range(k-1)] + [best_perm]
         new_population = [combined_pop[i][0] for i in range(k)]
-        # print(len(new_population))
         
         population = new_population
-
-    # Вывод наилучшей перестановки, ее значение пригодности, начального отступа
     
     if type == 'calculate':
-        # print("Лучшая расстановка генетическим:")
-        # for col in fitness[0][0].list_of_columns:
-        #     print(col.list_of_segments)
         return fitness[0][0].deviation
     elif type == 'multyple':
         return fitness[0][0]
     else:
-        print("Лучшая расстановка:")
-        i = 1
-        for col in fitness[0][0].list_of_columns:
-            print(f'{i}-ый столбец')
-            print(col.list_of_segments)
-            print(f'Смещение внутри столбца = {col.indent}')
-            i += 1
-        print(f'Смещение упаковки = {fitness[0][0].indent_y}')
-        print(f'Минимальное отклонение упаковки: {fitness[0][0].deviation}')
-        # print(f'Минимальное отклонение x: {fitness[0][0].deviation_x}')
-        # print(f'Минимальное отклонение y: {fitness[0][0].deviation_y}')
-        # print(f'Минимальное отклонение %: {fitness[0][0].deviation_proc}')
-        # print(f'Минимальное отклонение x %: {fitness[0][0].deviation_x_proc}')
-        # print(f'Минимальное отклонение y %: {fitness[0][0].deviation_y_proc}')
-        # if res[0].indent != None:
-        #     print("Отступ от левого края для соединения:", res[0].indent)
-
-
-    # if find == False:
-    #     print('Не удалось найти расстановку удовлетворяющую заданным параметрам.')
+        root = tk.Tk()
+        app = FitnessApp(root)
+        app.display_fitness_info(fitness)
+        root.mainloop()
+        # print("Упаковка:")
+        # i = 1
+        # for col in fitness[0][0].list_of_columns:
+        #     print(f'{i}-ый столбец')
+        #     print(col.list_of_segments)
+        #     print(f'Смещение внутри столбца = {col.indent}')
+        #     i += 1
+        # print(f'Смещение упаковки = {fitness[0][0].indent_y}')
+        # print(f'Минимальное отклонение упаковки: {fitness[0][0].deviation}')

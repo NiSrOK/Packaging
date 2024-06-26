@@ -1,4 +1,3 @@
-from random import shuffle, sample
 from math import sqrt
 import copy
 import random
@@ -22,15 +21,12 @@ class Package:
         sum_px = 0
         sum_py = 0
         num = 0
-        # h2 = 41
+
         for column in self.list_of_columns:
             num += 1
             sum_p += column.p
             sum_px += column.p*(column.a + column.indent)
             sum_py += column.p*(self.row_width*num - self.row_width/2)
-            
-        # self.deviation_x = abs(sum_px / (sum_p*c_x) - 1)*100
-        # self.deviation_y = abs(sum_py / (sum_p*c_y) - 1)*100
 
         self.deviation_x = abs(sum_px / (sum_p) - c_x)
         self.deviation_y = abs(sum_py / (sum_p) - c_y)
@@ -93,19 +89,7 @@ def create_list_of_connections(list_of_segments, k, c, h1, h2, rand = True):
         copy_list_of_segments = copy.deepcopy(list_of_segments)
         random.shuffle(copy_list_of_segments)
         con = Connection(list_of_segments=copy_list_of_segments)
-        # con = approve_length(con, list_of_segments, h1, h2)
-        # if random:
-        #     con.randomize_connection()
         con.calculate_connection()
         con.calculate_deviation(c, h1, h2)
         list_of_connections.append(con)
     return list_of_connections
-
-# def create_list_of_packages(list_of_columns, c, random = True):
-#     list_of_packages = []
-#     pack = Package(list_of_columns=list_of_columns)
-#     if random:
-#         pack.randomize_package()
-#     pack.calculate_deviation(list_of_columns, c)
-#     list_of_packages.append(pack)
-#     return list_of_packages
